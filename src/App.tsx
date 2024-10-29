@@ -3,7 +3,9 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Sidebar from "./components/Sidebar";
+import Login from "./pages/Login";
 import Index from "./pages/Index";
 import Predictions from "./pages/Predictions";
 import Optimization from "./pages/Optimization";
@@ -18,13 +20,63 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Sidebar />
         <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/predictions" element={<Predictions />} />
-          <Route path="/optimization" element={<Optimization />} />
-          <Route path="/analysis" element={<Analysis />} />
-          <Route path="/data" element={<Data />} />
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <>
+                  <Sidebar />
+                  <Index />
+                </>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/predictions"
+            element={
+              <ProtectedRoute>
+                <>
+                  <Sidebar />
+                  <Predictions />
+                </>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/optimization"
+            element={
+              <ProtectedRoute>
+                <>
+                  <Sidebar />
+                  <Optimization />
+                </>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/analysis"
+            element={
+              <ProtectedRoute>
+                <>
+                  <Sidebar />
+                  <Analysis />
+                </>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/data"
+            element={
+              <ProtectedRoute>
+                <>
+                  <Sidebar />
+                  <Data />
+                </>
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
