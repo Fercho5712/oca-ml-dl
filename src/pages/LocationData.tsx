@@ -6,16 +6,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/components/ui/use-toast";
 
 const distributionCenters = [
-  { id: "cdmx", name: "Ciudad de México", location: "CDMX" },
-  { id: "gdl", name: "Guadalajara", location: "Jalisco" },
-  { id: "mty", name: "Monterrey", location: "Nuevo León" },
+  { id: "bog", name: "Bogotá", location: "Cundinamarca" },
+  { id: "med", name: "Medellín", location: "Antioquia" },
+  { id: "cal", name: "Cali", location: "Valle del Cauca" },
+  { id: "bar", name: "Barranquilla", location: "Atlántico" },
 ];
 
 const cropTypes = [
+  { id: "cafe", name: "Café" },
+  { id: "platano", name: "Plátano" },
+  { id: "papa", name: "Papa" },
+  { id: "yuca", name: "Yuca" },
   { id: "maiz", name: "Maíz" },
-  { id: "trigo", name: "Trigo" },
-  { id: "frijol", name: "Frijol" },
-  { id: "aguacate", name: "Aguacate" },
+  { id: "arroz", name: "Arroz" },
 ];
 
 const LocationData = () => {
@@ -28,7 +31,6 @@ const LocationData = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Aquí se podría agregar la lógica para enviar los datos a un backend
     toast({
       title: "Datos guardados",
       description: "La información ha sido registrada exitosamente",
@@ -70,13 +72,13 @@ const LocationData = () => {
 
             <div className="space-y-2">
               <label htmlFor="state" className="text-sm font-medium">
-                Estado
+                Departamento
               </label>
               <Input
                 id="state"
                 value={state}
                 onChange={(e) => setState(e.target.value)}
-                placeholder="Estado"
+                placeholder="Departamento"
                 required
               />
             </div>
