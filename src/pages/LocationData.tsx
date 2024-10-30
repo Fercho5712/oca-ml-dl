@@ -21,10 +21,20 @@ const cropTypes = [
   { id: "arroz", name: "Arroz" },
 ];
 
+const departments = [
+  "Amazonas", "Antioquia", "Arauca", "Atlántico", "Bolívar", 
+  "Boyacá", "Caldas", "Caquetá", "Casanare", "Cauca", 
+  "Cesar", "Chocó", "Córdoba", "Cundinamarca", "Guainía", 
+  "Guaviare", "Huila", "La Guajira", "Magdalena", "Meta", 
+  "Nariño", "Norte de Santander", "Putumayo", "Quindío", 
+  "Risaralda", "San Andrés y Providencia", "Santander", 
+  "Sucre", "Tolima", "Valle del Cauca", "Vaupés", "Vichada"
+];
+
 const LocationData = () => {
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
-  const [state, setState] = useState("");
+  const [department, setDepartment] = useState("");
   const [cropType, setCropType] = useState("");
   const [center, setCenter] = useState("");
   const { toast } = useToast();
@@ -71,16 +81,21 @@ const LocationData = () => {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="state" className="text-sm font-medium">
+              <label htmlFor="department" className="text-sm font-medium">
                 Departamento
               </label>
-              <Input
-                id="state"
-                value={state}
-                onChange={(e) => setState(e.target.value)}
-                placeholder="Departamento"
-                required
-              />
+              <Select value={department} onValueChange={setDepartment}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona un departamento" />
+                </SelectTrigger>
+                <SelectContent>
+                  {departments.map((dept) => (
+                    <SelectItem key={dept} value={dept}>
+                      {dept}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
