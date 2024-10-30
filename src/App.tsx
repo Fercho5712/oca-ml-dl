@@ -11,6 +11,7 @@ import Predictions from "./pages/Predictions";
 import Optimization from "./pages/Optimization";
 import Analysis from "./pages/Analysis";
 import Data from "./pages/Data";
+import LocationData from "./pages/LocationData";
 
 const queryClient = new QueryClient();
 
@@ -73,6 +74,17 @@ const App = () => (
                 <>
                   <Sidebar />
                   <Data />
+                </>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/location"
+            element={
+              <ProtectedRoute>
+                <>
+                  <Sidebar />
+                  <LocationData />
                 </>
               </ProtectedRoute>
             }

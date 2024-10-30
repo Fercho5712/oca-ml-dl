@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, LineChart, Settings, Database, TrendingUp } from 'lucide-react';
+import { LayoutDashboard, LineChart, Settings, Database, TrendingUp, MapPin } from 'lucide-react';
 
 const Sidebar = () => {
   const location = useLocation();
@@ -10,6 +10,7 @@ const Sidebar = () => {
     { path: '/optimization', icon: Settings, label: 'Optimización' },
     { path: '/analysis', icon: TrendingUp, label: 'Análisis' },
     { path: '/data', icon: Database, label: 'Datos' },
+    { path: '/location', icon: MapPin, label: 'Ubicación' },
   ];
 
   return (
