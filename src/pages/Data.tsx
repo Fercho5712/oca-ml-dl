@@ -3,19 +3,19 @@ import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 
-const mockTableData = [
-  { id: 1, source: 'ERP System', lastUpdate: '2024-02-15', status: 'Activo', records: '12,453' },
-  { id: 2, source: 'WMS', lastUpdate: '2024-02-15', status: 'Activo', records: '8,234' },
-  { id: 3, source: 'TMS', lastUpdate: '2024-02-14', status: 'En Pausa', records: '5,678' },
-  { id: 4, source: 'CRM', lastUpdate: '2024-02-15', status: 'Activo', records: '15,789' },
-  { id: 5, source: 'IoT Sensors', lastUpdate: '2024-02-15', status: 'Activo', records: '45,123' },
+const mockLocationData = [
+  { id: 1, department: 'Cundinamarca', city: 'Bogotá', center: 'CD Bogotá', cropType: 'Café', lastUpdate: '2024-02-15' },
+  { id: 2, department: 'Antioquia', city: 'Medellín', center: 'CD Medellín', cropType: 'Plátano', lastUpdate: '2024-02-15' },
+  { id: 3, department: 'Valle del Cauca', city: 'Cali', center: 'CD Cali', cropType: 'Caña', lastUpdate: '2024-02-14' },
+  { id: 4, department: 'Atlántico', city: 'Barranquilla', center: 'CD Barranquilla', cropType: 'Yuca', lastUpdate: '2024-02-15' },
+  { id: 5, department: 'Santander', city: 'Bucaramanga', center: 'CD Bucaramanga', cropType: 'Café', lastUpdate: '2024-02-15' },
 ];
 
 const Data = () => {
   return (
     <div className="p-8 ml-64">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Datos</h1>
+        <h1 className="text-3xl font-bold">Datos de Ubicaciones</h1>
         <div className="flex gap-4">
           <Button variant="outline" size="sm">
             <Filter className="w-4 h-4 mr-2" />
@@ -34,41 +34,35 @@ const Data = () => {
 
       <Card className="p-6">
         <div className="mb-6">
-          <h2 className="text-xl font-semibold">Fuentes de Datos</h2>
+          <h2 className="text-xl font-semibold">Registro de Ubicaciones</h2>
           <p className="text-sm text-gray-500 mt-1">
-            Estado actual de las conexiones y última actualización de datos
+            Listado de ubicaciones registradas y sus detalles
           </p>
         </div>
 
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Fuente</TableHead>
+              <TableHead>Departamento</TableHead>
+              <TableHead>Ciudad</TableHead>
+              <TableHead>Centro de Distribución</TableHead>
+              <TableHead>Tipo de Cultivo</TableHead>
               <TableHead>Última Actualización</TableHead>
-              <TableHead>Estado</TableHead>
-              <TableHead>Registros</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {mockTableData.map((row) => (
+            {mockLocationData.map((row) => (
               <TableRow key={row.id}>
                 <TableCell className="font-medium">
                   <div className="flex items-center">
                     <Database className="w-4 h-4 mr-2 text-primary" />
-                    {row.source}
+                    {row.department}
                   </div>
                 </TableCell>
+                <TableCell>{row.city}</TableCell>
+                <TableCell>{row.center}</TableCell>
+                <TableCell>{row.cropType}</TableCell>
                 <TableCell>{row.lastUpdate}</TableCell>
-                <TableCell>
-                  <span className={`px-2 py-1 rounded-full text-xs ${
-                    row.status === 'Activo' 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {row.status}
-                  </span>
-                </TableCell>
-                <TableCell>{row.records}</TableCell>
               </TableRow>
             ))}
           </TableBody>

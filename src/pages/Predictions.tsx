@@ -2,31 +2,31 @@ import { LineChart, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react'
 import { Card } from "@/components/ui/card";
 import { ResponsiveContainer, LineChart as ReChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 
-const mockData = [
-  { month: 'Ene', actual: 4200, predicted: 4100 },
-  { month: 'Feb', actual: 3800, predicted: 3900 },
-  { month: 'Mar', actual: 4600, predicted: 4500 },
-  { month: 'Abr', actual: 5100, predicted: 5000 },
-  { month: 'May', actual: 4800, predicted: 4900 },
+const mockLocationPredictions = [
+  { month: 'Ene', actual: 150, predicted: 145 },
+  { month: 'Feb', actual: 165, predicted: 160 },
+  { month: 'Mar', actual: 180, predicted: 175 },
+  { month: 'Abr', actual: 168, predicted: 170 },
+  { month: 'May', actual: 185, predicted: 180 },
 ];
 
 const metrics = [
   {
-    title: "Precisión del Modelo",
+    title: "Precisión de Predicción",
     value: "96.8%",
     trend: "↑ 1.2%",
     status: "success",
     icon: <CheckCircle className="w-6 h-6" />
   },
   {
-    title: "Error Medio",
-    value: "3.2%",
-    trend: "↓ 0.8%",
+    title: "Crecimiento Esperado",
+    value: "+15%",
+    trend: "↑ 2.3%",
     status: "success",
     icon: <TrendingUp className="w-6 h-6" />
   },
   {
-    title: "Alertas Activas",
+    title: "Alertas de Capacidad",
     value: "2",
     trend: "+1 vs ayer",
     status: "warning",
@@ -38,7 +38,7 @@ const Predictions = () => {
   return (
     <div className="p-8 ml-64">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Predicciones</h1>
+        <h1 className="text-3xl font-bold">Predicciones de Ubicaciones</h1>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -66,10 +66,10 @@ const Predictions = () => {
 
       <div className="grid grid-cols-1 gap-6">
         <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Predicción vs Realidad</h2>
+          <h2 className="text-xl font-semibold mb-4">Crecimiento de Ubicaciones</h2>
           <div className="h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
-              <ReChart data={mockData}>
+              <ReChart data={mockLocationPredictions}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />
@@ -79,7 +79,7 @@ const Predictions = () => {
                   type="monotone" 
                   dataKey="actual" 
                   stroke="hsl(var(--primary))" 
-                  name="Valor Real"
+                  name="Ubicaciones Actuales"
                   strokeWidth={2}
                 />
                 <Line 

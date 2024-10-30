@@ -1,34 +1,34 @@
 import { TrendingUp, ArrowUpRight, ArrowDownRight, Activity } from 'lucide-react';
 import { Card } from "@/components/ui/card";
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar } from 'recharts';
 
-const mockTrendData = [
-  { month: 'Ene', efficiency: 82, costs: 75, quality: 88 },
-  { month: 'Feb', efficiency: 85, costs: 78, quality: 87 },
-  { month: 'Mar', efficiency: 86, costs: 82, quality: 89 },
-  { month: 'Abr', efficiency: 89, costs: 85, quality: 91 },
-  { month: 'May', efficiency: 87, costs: 83, quality: 90 },
+const mockLocationData = [
+  { department: 'Cundinamarca', locations: 45, cropTypes: 4, efficiency: 88 },
+  { department: 'Antioquia', locations: 38, cropTypes: 3, efficiency: 85 },
+  { department: 'Valle del Cauca', locations: 32, cropTypes: 5, efficiency: 92 },
+  { department: 'Atlántico', locations: 25, cropTypes: 3, efficiency: 87 },
+  { department: 'Santander', locations: 28, cropTypes: 4, efficiency: 86 },
 ];
 
 const kpis = [
   {
-    title: "Eficiencia Operativa",
-    value: "87%",
-    trend: "+2.3%",
+    title: "Total Ubicaciones",
+    value: "168",
+    trend: "+12%",
     status: "positive",
     icon: <TrendingUp className="w-6 h-6" />
   },
   {
-    title: "Costos Logísticos",
-    value: "83%",
-    trend: "-1.5%",
+    title: "Eficiencia Promedio",
+    value: "87.6%",
+    trend: "+2.3%",
     status: "positive",
-    icon: <ArrowDownRight className="w-6 h-6" />
+    icon: <ArrowUpRight className="w-6 h-6" />
   },
   {
-    title: "Calidad de Servicio",
-    value: "90%",
-    trend: "+0.8%",
+    title: "Tipos de Cultivo",
+    value: "6",
+    trend: "+1",
     status: "positive",
     icon: <Activity className="w-6 h-6" />
   }
@@ -38,7 +38,7 @@ const Analysis = () => {
   return (
     <div className="p-8 ml-64">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Análisis</h1>
+        <h1 className="text-3xl font-bold">Análisis de Ubicaciones</h1>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -66,37 +66,18 @@ const Analysis = () => {
 
       <div className="grid grid-cols-1 gap-6">
         <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Tendencias de KPIs</h2>
+          <h2 className="text-xl font-semibold mb-4">Distribución por Departamento</h2>
           <div className="h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={mockTrendData}>
+              <BarChart data={mockLocationData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
+                <XAxis dataKey="department" />
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="efficiency" 
-                  stroke="hsl(var(--primary))" 
-                  name="Eficiencia"
-                  strokeWidth={2}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="costs" 
-                  stroke="hsl(var(--secondary))" 
-                  name="Costos"
-                  strokeWidth={2}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="quality" 
-                  stroke="hsl(var(--accent))" 
-                  name="Calidad"
-                  strokeWidth={2}
-                />
-              </LineChart>
+                <Bar dataKey="locations" name="Ubicaciones" fill="hsl(var(--primary))" />
+                <Bar dataKey="cropTypes" name="Tipos de Cultivo" fill="hsl(var(--secondary))" />
+              </BarChart>
             </ResponsiveContainer>
           </div>
         </Card>
