@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,6 @@ const Login = () => {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // For demo purposes, using hardcoded credentials
     if (email === "demo@example.com" && password === "demo123") {
       localStorage.setItem("isAuthenticated", "true");
       toast({
@@ -30,28 +29,15 @@ const Login = () => {
     }
   };
 
-  // Handle keyboard events safely
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key && e.key === "Enter") {
-      const activeElement = document.activeElement;
-      if (activeElement instanceof HTMLInputElement) {
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      const form = (e.target as HTMLElement).closest('form');
+      if (form) {
         e.preventDefault();
-        const form = activeElement.closest('form');
-        if (form) {
-          const submitEvent = new Event('submit', { cancelable: true });
-          form.dispatchEvent(submitEvent);
-        }
+        handleLogin(e);
       }
     }
   };
-
-  // Add and remove event listener safely
-  useEffect(() => {
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -71,6 +57,7 @@ const Login = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onKeyPress={handleKeyPress}
               placeholder="correo@ejemplo.com"
               required
             />
@@ -85,6 +72,7 @@ const Login = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              onKeyPress={handleKeyPress}
               placeholder="••••••••"
               required
             />
