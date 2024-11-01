@@ -32,12 +32,15 @@ const Login = () => {
 
   // Handle keyboard events safely
   const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key && e.key.toLowerCase() === "enter") {
+    if (e.key && e.key === "Enter") {
       const activeElement = document.activeElement;
       if (activeElement instanceof HTMLInputElement) {
         e.preventDefault();
-        const syntheticEvent = new Event("submit") as unknown as React.FormEvent;
-        handleLogin(syntheticEvent);
+        const form = activeElement.closest('form');
+        if (form) {
+          const submitEvent = new Event('submit', { cancelable: true });
+          form.dispatchEvent(submitEvent);
+        }
       }
     }
   };
@@ -48,7 +51,7 @@ const Login = () => {
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [email, password]);
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
