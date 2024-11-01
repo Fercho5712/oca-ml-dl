@@ -1,0 +1,6 @@
+Django==5.0.2
+djangorestframework==3.14.0
+django-cors-headers==4.3.1
+agml==0.8.0
+python-weather==1.1.1
+python-dotenv==1.0.1
