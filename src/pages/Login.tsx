@@ -30,6 +30,25 @@ const Login = () => {
     }
   };
 
+  // Handle keyboard events safely
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key && e.key.toLowerCase() === "enter") {
+      const activeElement = document.activeElement;
+      if (activeElement instanceof HTMLInputElement) {
+        e.preventDefault();
+        handleLogin(new Event("submit") as React.FormEvent);
+      }
+    }
+  };
+
+  // Add and remove event listener safely
+  React.useEffect(() => {
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [email, password]);
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <Card className="w-full max-w-md p-8">
