@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -36,13 +36,14 @@ const Login = () => {
       const activeElement = document.activeElement;
       if (activeElement instanceof HTMLInputElement) {
         e.preventDefault();
-        handleLogin(new Event("submit") as React.FormEvent);
+        const syntheticEvent = new Event("submit") as unknown as React.FormEvent;
+        handleLogin(syntheticEvent);
       }
     }
   };
 
   // Add and remove event listener safely
-  React.useEffect(() => {
+  useEffect(() => {
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
