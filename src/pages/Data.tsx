@@ -2,6 +2,10 @@ import { Database, RefreshCw, Filter, Download } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
 
 const mockLocationData = [
   { id: 1, department: 'Cundinamarca', city: 'Bogotá', center: 'CD Bogotá', cropType: 'Café', lastUpdate: '2024-02-15' },
@@ -12,20 +16,89 @@ const mockLocationData = [
 ];
 
 const Data = () => {
+  const [filterText, setFilterText] = useState("");
+  const [data, setData] = useState(mockLocationData);
+  const { toast } = useToast();
+
+  const handleFilter = (text: string) => {
+    setFilterText(text);
+    const filtered = mockLocationData.filter(item => 
+      Object.values(item).some(value => 
+        value.toString().toLowerCase().includes(text.toLowerCase())
+      )
+    );
+    setData(filtered);
+  };
+
+  const handleExport = () => {
+    const csvContent = [
+      ['ID', 'Departamento', 'Ciudad', 'Centro de Distribución', 'Tipo de Cultivo', 'Última Actualización'],
+      ...data.map(row => [
+        row.id,
+        row.department,
+        row.city,
+        row.center,
+        row.cropType,
+        row.lastUpdate
+      ])
+    ].map(row => row.join(',')).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'ubicaciones.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: "Exportación exitosa",
+      description: "Los datos han sido exportados en formato CSV",
+    });
+  };
+
+  const handleRefresh = () => {
+    setData(mockLocationData);
+    setFilterText("");
+    toast({
+      title: "Datos actualizados",
+      description: "La tabla ha sido actualizada con éxito",
+    });
+  };
+
   return (
     <div className="p-8 ml-64">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Datos de Ubicaciones</h1>
         <div className="flex gap-4">
-          <Button variant="outline" size="sm">
-            <Filter className="w-4 h-4 mr-2" />
-            Filtrar
-          </Button>
-          <Button variant="outline" size="sm">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Filter className="w-4 h-4 mr-2" />
+                Filtrar
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Filtrar Datos</DialogTitle>
+              </DialogHeader>
+              <div className="py-4">
+                <Input
+                  placeholder="Buscar en todos los campos..."
+                  value={filterText}
+                  onChange={(e) => handleFilter(e.target.value)}
+                />
+              </div>
+            </DialogContent>
+          </Dialog>
+          
+          <Button variant="outline" size="sm" onClick={handleExport}>
             <Download className="w-4 h-4 mr-2" />
             Exportar
           </Button>
-          <Button size="sm">
+          
+          <Button size="sm" onClick={handleRefresh}>
             <RefreshCw className="w-4 h-4 mr-2" />
             Actualizar
           </Button>
@@ -51,7 +124,7 @@ const Data = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {mockLocationData.map((row) => (
+            {data.map((row) => (
               <TableRow key={row.id}>
                 <TableCell className="font-medium">
                   <div className="flex items-center">
