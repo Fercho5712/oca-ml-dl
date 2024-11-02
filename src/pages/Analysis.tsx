@@ -1,15 +1,29 @@
-import { TrendingUp, ArrowUpRight, ArrowDownRight, Activity } from 'lucide-react';
+import { TrendingUp, ArrowUpRight, Activity } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar } from 'recharts';
 import { useEffect, useState } from 'react';
 
+const defaultLocationData = [
+  { department: 'Cundinamarca', locations: 45, cropTypes: 4 },
+  { department: 'Antioquia', locations: 38, cropTypes: 3 },
+  { department: 'Valle del Cauca', locations: 32, cropTypes: 5 },
+  { department: 'Atlántico', locations: 25, cropTypes: 3 },
+  { department: 'Santander', locations: 28, cropTypes: 4 },
+];
+
 const Analysis = () => {
   const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [locationData, setLocationData] = useState(defaultLocationData);
 
   useEffect(() => {
     const storedAnalysis = localStorage.getItem('analysisResult');
     if (storedAnalysis) {
       setAnalysisResult(JSON.parse(storedAnalysis));
+    }
+
+    const storedLocationData = localStorage.getItem('locationData');
+    if (storedLocationData) {
+      setLocationData(JSON.parse(storedLocationData));
     }
   }, []);
 
@@ -30,7 +44,7 @@ const Analysis = () => {
     },
     {
       title: "Acciones Recomendadas",
-      value: analysisResult.recommendedActions.length.toString(),
+      value: analysisResult?.recommendedActions?.length.toString() || "0",
       trend: "Nuevas",
       status: "positive",
       icon: <Activity className="w-6 h-6" />
@@ -71,7 +85,7 @@ const Analysis = () => {
           <h2 className="text-xl font-semibold mb-4">Distribución por Departamento</h2>
           <div className="h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={mockLocationData}>
+              <BarChart data={locationData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="department" />
                 <YAxis />
