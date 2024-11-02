@@ -1,40 +1,42 @@
 import { TrendingUp, ArrowUpRight, ArrowDownRight, Activity } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar } from 'recharts';
-
-const mockLocationData = [
-  { department: 'Cundinamarca', locations: 45, cropTypes: 4, efficiency: 88 },
-  { department: 'Antioquia', locations: 38, cropTypes: 3, efficiency: 85 },
-  { department: 'Valle del Cauca', locations: 32, cropTypes: 5, efficiency: 92 },
-  { department: 'Atlántico', locations: 25, cropTypes: 3, efficiency: 87 },
-  { department: 'Santander', locations: 28, cropTypes: 4, efficiency: 86 },
-];
-
-const kpis = [
-  {
-    title: "Total Ubicaciones",
-    value: "168",
-    trend: "+12%",
-    status: "positive",
-    icon: <TrendingUp className="w-6 h-6" />
-  },
-  {
-    title: "Eficiencia Promedio",
-    value: "87.6%",
-    trend: "+2.3%",
-    status: "positive",
-    icon: <ArrowUpRight className="w-6 h-6" />
-  },
-  {
-    title: "Tipos de Cultivo",
-    value: "6",
-    trend: "+1",
-    status: "positive",
-    icon: <Activity className="w-6 h-6" />
-  }
-];
+import { useEffect, useState } from 'react';
 
 const Analysis = () => {
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
+
+  useEffect(() => {
+    const storedAnalysis = localStorage.getItem('analysisResult');
+    if (storedAnalysis) {
+      setAnalysisResult(JSON.parse(storedAnalysis));
+    }
+  }, []);
+
+  const kpis = analysisResult ? [
+    {
+      title: "Índice de Salud",
+      value: `${(analysisResult.cropHealthIndex * 100).toFixed(1)}%`,
+      trend: "+2.3%",
+      status: "positive",
+      icon: <TrendingUp className="w-6 h-6" />
+    },
+    {
+      title: "Eficiencia",
+      value: `${analysisResult.efficiency.toFixed(1)}%`,
+      trend: "+1.5%",
+      status: "positive",
+      icon: <ArrowUpRight className="w-6 h-6" />
+    },
+    {
+      title: "Acciones Recomendadas",
+      value: analysisResult.recommendedActions.length.toString(),
+      trend: "Nuevas",
+      status: "positive",
+      icon: <Activity className="w-6 h-6" />
+    }
+  ] : [];
+
   return (
     <div className="p-8 ml-64">
       <div className="flex justify-between items-center mb-8">

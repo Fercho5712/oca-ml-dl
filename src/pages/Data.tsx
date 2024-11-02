@@ -6,6 +6,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { analyzeData, generatePredictions, calculateOptimization } from '../utils/dataAnalysis';
+import { useNavigate } from 'react-router-dom';
 
 const mockLocationData = [
   { id: 1, department: 'Cundinamarca', city: 'Bogotá', center: 'CD Bogotá', cropType: 'Café', lastUpdate: '2024-02-15' },
@@ -19,6 +21,7 @@ const Data = () => {
   const [filterText, setFilterText] = useState("");
   const [data, setData] = useState(mockLocationData);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleFilter = (text: string) => {
     setFilterText(text);
@@ -90,11 +93,26 @@ const Data = () => {
           };
         });
 
+        // Realizar análisis y cálculos
+        const analysisResult = analyzeData(newData);
+        const predictions = generatePredictions(newData);
+        const optimizations = calculateOptimization(newData);
+
+        // Guardar datos y mostrar resultados
         setData(newData);
+        
+        // Actualizar estado global o contexto si es necesario
+        localStorage.setItem('analysisResult', JSON.stringify(analysisResult));
+        localStorage.setItem('predictions', JSON.stringify(predictions));
+        localStorage.setItem('optimizations', JSON.stringify(optimizations));
+
         toast({
-          title: "Importación exitosa",
-          description: "Los datos han sido importados correctamente",
+          title: "Importación y análisis exitosos",
+          description: "Los datos han sido importados y analizados correctamente",
         });
+
+        // Redirigir a la página de análisis
+        navigate('/analysis');
       } catch (error) {
         toast({
           title: "Error en la importación",
