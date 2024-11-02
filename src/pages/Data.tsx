@@ -1,4 +1,4 @@
-import { Database, RefreshCw, Filter, Download } from 'lucide-react';
+import { Database, RefreshCw, Filter, Download, Upload } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -67,6 +67,45 @@ const Data = () => {
     });
   };
 
+  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const text = e.target?.result as string;
+        const lines = text.split('\n');
+        const headers = lines[0].split(',');
+        
+        const newData = lines.slice(1).map((line, index) => {
+          const values = line.split(',');
+          return {
+            id: index + 1,
+            department: values[1] || '',
+            city: values[2] || '',
+            center: values[3] || '',
+            cropType: values[4] || '',
+            lastUpdate: values[5] || new Date().toISOString().split('T')[0]
+          };
+        });
+
+        setData(newData);
+        toast({
+          title: "Importación exitosa",
+          description: "Los datos han sido importados correctamente",
+        });
+      } catch (error) {
+        toast({
+          title: "Error en la importación",
+          description: "El archivo no tiene el formato correcto",
+          variant: "destructive",
+        });
+      }
+    };
+    reader.readAsText(file);
+  };
+
   return (
     <div className="p-8 ml-64">
       <div className="flex justify-between items-center mb-8">
@@ -92,6 +131,22 @@ const Data = () => {
               </div>
             </DialogContent>
           </Dialog>
+          
+          <label htmlFor="import-csv" className="cursor-pointer">
+            <Button variant="outline" size="sm" asChild>
+              <span>
+                <Upload className="w-4 h-4 mr-2" />
+                Importar
+              </span>
+            </Button>
+          </label>
+          <input
+            id="import-csv"
+            type="file"
+            accept=".csv"
+            className="hidden"
+            onChange={handleImport}
+          />
           
           <Button variant="outline" size="sm" onClick={handleExport}>
             <Download className="w-4 h-4 mr-2" />
