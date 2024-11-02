@@ -3,11 +3,14 @@ import { Card } from "@/components/ui/card";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 
 const mockData = [
-  { resource: 'Almacén A', actual: 85, optimal: 95 },
-  { resource: 'Almacén B', actual: 72, optimal: 80 },
-  { resource: 'Ruta 1', actual: 65, optimal: 85 },
-  { resource: 'Ruta 2', actual: 90, optimal: 90 },
-  { resource: 'Centro Dist.', actual: 78, optimal: 88 },
+  { resource: 'CD Bogotá - Mosquera', actual: 85, optimal: 95 },
+  { resource: 'CD Medellín - Rionegro', actual: 72, optimal: 80 },
+  { resource: 'Ruta Bogotá - Villavicencio', actual: 65, optimal: 85 },
+  { resource: 'Ruta Medellín - Montería', actual: 90, optimal: 90 },
+  { resource: 'CD Cali - Buenaventura', actual: 78, optimal: 88 },
+  { resource: 'Ruta Cali - Popayán', actual: 82, optimal: 92 },
+  { resource: 'CD Barranquilla - Santa Marta', actual: 88, optimal: 94 },
+  { resource: 'Ruta Cartagena - Sincelejo', actual: 70, optimal: 85 },
 ];
 
 const metrics = [
@@ -38,7 +41,7 @@ const Optimization = () => {
   return (
     <div className="p-8 ml-64">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Optimización</h1>
+        <h1 className="text-3xl font-bold">Optimización de Rutas y Centros</h1>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -66,12 +69,12 @@ const Optimization = () => {
 
       <div className="grid grid-cols-1 gap-6">
         <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Rendimiento vs Óptimo</h2>
+          <h2 className="text-xl font-semibold mb-4">Rendimiento de Rutas y Centros</h2>
           <div className="h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={mockData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="resource" />
+                <XAxis dataKey="resource" angle={-45} textAnchor="end" height={100} />
                 <YAxis />
                 <Tooltip />
                 <Legend />
