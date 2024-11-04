@@ -1,4 +1,3 @@
-import { Database, RefreshCw, Filter, Download, Upload } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,7 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { useLocationData } from '../context/LocationDataContext';
 import { useNavigate } from 'react-router-dom';
+import { Database } from 'lucide-react';
 
 const Data = () => {
   const { locationData, setLocationData, updateAnalytics } = useLocationData();
@@ -17,11 +17,15 @@ const Data = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const filtered = locationData.filter(item => 
-      Object.values(item).some(value => 
-        value.toString().toLowerCase().includes(filterText.toLowerCase())
-      )
-    );
+    const filtered = locationData.filter(item => {
+      if (!item) return false;
+      return Object.entries(item).some(([key, value]) => {
+        if (value === null || value === undefined) return false;
+        const stringValue = String(value).toLowerCase();
+        const searchTerm = filterText.toLowerCase();
+        return stringValue.includes(searchTerm);
+      });
+    });
     setFilteredData(filtered);
   }, [filterText, locationData]);
 
@@ -32,10 +36,16 @@ const Data = () => {
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
-        const text = e.target?.result as string;
+        const text = e.target?.result;
+        if (typeof text !== 'string') {
+          throw new Error('Invalid file content');
+        }
+
         const lines = text.split('\n');
-        const headers = lines[0].split(',');
-        
+        if (lines.length < 2) {
+          throw new Error('File is empty or invalid');
+        }
+
         const newData = lines.slice(1).map((line, index) => {
           const values = line.split(',');
           return {
@@ -60,7 +70,7 @@ const Data = () => {
       } catch (error) {
         toast({
           title: "Error en la importación",
-          description: "El archivo no tiene el formato correcto",
+          description: "Hubo un error al procesar el archivo",
           variant: "destructive",
         });
       }
@@ -77,11 +87,11 @@ const Data = () => {
       ['ID', 'Departamento', 'Ciudad', 'Centro de Distribución', 'Tipo de Cultivo', 'Última Actualización'],
       ...filteredData.map((row, index) => [
         index + 1,
-        row.department,
-        row.city,
-        row.distribution_center,
-        row.crop_type,
-        row.created_at
+        row.department || '',
+        row.city || '',
+        row.distribution_center || '',
+        row.crop_type || '',
+        row.created_at || ''
       ])
     ].map(row => row.join(',')).join('\n');
 
@@ -111,64 +121,41 @@ const Data = () => {
 
   return (
     <div className="p-8 ml-64">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Datos de Ubicaciones</h1>
-        <div className="flex gap-4">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Filter className="w-4 h-4 mr-2" />
-                Filtrar
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Filtrar Datos</DialogTitle>
-              </DialogHeader>
-              <div className="py-4">
-                <Input
-                  placeholder="Buscar en todos los campos..."
-                  value={filterText}
-                  onChange={(e) => handleFilter(e.target.value)}
-                />
-              </div>
-            </DialogContent>
-          </Dialog>
-          
-          <label htmlFor="import-csv" className="cursor-pointer">
-            <Button variant="outline" size="sm" asChild>
-              <span>
-                <Upload className="w-4 h-4 mr-2" />
-                Importar
-              </span>
-            </Button>
-          </label>
-          <input
-            id="import-csv"
-            type="file"
-            accept=".csv"
-            className="hidden"
-            onChange={handleImport}
-          />
-          
-          <Button variant="outline" size="sm" onClick={handleExport}>
-            <Download className="w-4 h-4 mr-2" />
-            Exportar
-          </Button>
-          
-          <Button size="sm" onClick={handleRefresh}>
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Actualizar
-          </Button>
-        </div>
-      </div>
-
       <Card className="p-6">
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold">Registro de Ubicaciones</h2>
-          <p className="text-sm text-gray-500 mt-1">
-            Listado de ubicaciones registradas y sus detalles
-          </p>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold">Datos de Ubicación</h2>
+          <div className="flex gap-4">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline">Importar CSV</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Importar datos desde CSV</DialogTitle>
+                </DialogHeader>
+                <Input
+                  type="file"
+                  accept=".csv"
+                  onChange={handleImport}
+                />
+              </DialogContent>
+            </Dialog>
+            <Button variant="outline" onClick={handleExport}>
+              Exportar CSV
+            </Button>
+            <Button variant="outline" onClick={handleRefresh}>
+              Actualizar
+            </Button>
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <Input
+            placeholder="Filtrar datos..."
+            value={filterText}
+            onChange={(e) => handleFilter(e.target.value)}
+            className="max-w-sm"
+          />
         </div>
 
         <Table>
