@@ -55,15 +55,28 @@ const LocationData = () => {
   const [center, setCenter] = useState("");
   const { toast } = useToast();
 
-  const availableCenters = department ? (distributionCentersByDepartment[department as keyof typeof distributionCentersByDepartment] || []) : [];
+  const availableCenters = department ? 
+    (distributionCentersByDepartment[department as keyof typeof distributionCentersByDepartment] || []) 
+    : [];
 
   const handleDepartmentChange = (newDepartment: string) => {
-    setDepartment(newDepartment);
-    setCenter(""); // Reset center when department changes
+    if (typeof newDepartment === 'string') {
+      setDepartment(newDepartment);
+      setCenter(""); // Reset center when department changes
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!department || !city || !center || !cropType) {
+      toast({
+        title: "Error",
+        description: "Por favor complete todos los campos requeridos",
+      });
+      return;
+    }
+
     const newLocation = {
       department,
       city,
@@ -80,6 +93,13 @@ const LocationData = () => {
       title: "Datos guardados",
       description: "La información ha sido registrada exitosamente",
     });
+
+    // Reset form
+    setAddress("");
+    setCity("");
+    setDepartment("");
+    setCropType("");
+    setCenter("");
   };
 
   return (
