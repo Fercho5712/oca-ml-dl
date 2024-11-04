@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { useLocationData } from '../context/LocationDataContext';
 import { useNavigate } from 'react-router-dom';
-import { Database } from 'lucide-react';
+import { Database, RefreshCw } from 'lucide-react';
 
 const Data = () => {
   const { locationData, setLocationData, updateAnalytics } = useLocationData();
@@ -15,6 +15,11 @@ const Data = () => {
   const [filteredData, setFilteredData] = useState(locationData);
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Update filtered data when locationData changes
+  useEffect(() => {
+    handleFilter(filterText);
+  }, [locationData]);
 
   useEffect(() => {
     const filtered = locationData.filter(item => {
@@ -34,7 +39,7 @@ const Data = () => {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
         const text = e.target?.result;
         if (typeof text !== 'string') {
@@ -46,7 +51,7 @@ const Data = () => {
           throw new Error('File is empty or invalid');
         }
 
-        const newData = lines.slice(1).map((line, index) => {
+        const newData = lines.slice(1).map((line) => {
           const values = line.split(',');
           return {
             department: values[1] || '',
@@ -56,17 +61,19 @@ const Data = () => {
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           };
-        });
+        }).filter(item => item.department && item.city); // Filter out invalid entries
 
-        setLocationData([...locationData, ...newData]);
+        const updatedData = [...locationData, ...newData];
+        setLocationData(updatedData);
         updateAnalytics();
 
         toast({
           title: "Importación exitosa",
-          description: "Los datos han sido importados y analizados correctamente",
+          description: `Se importaron ${newData.length} registros correctamente`,
         });
 
-        navigate('/analysis');
+        // Refresh the filtered data
+        handleFilter(filterText);
       } catch (error) {
         toast({
           title: "Error en la importación",
@@ -113,6 +120,7 @@ const Data = () => {
   const handleRefresh = () => {
     setFilterText("");
     setFilteredData(locationData);
+    updateAnalytics();
     toast({
       title: "Datos actualizados",
       description: "La tabla ha sido actualizada con éxito",
@@ -143,7 +151,8 @@ const Data = () => {
             <Button variant="outline" onClick={handleExport}>
               Exportar CSV
             </Button>
-            <Button variant="outline" onClick={handleRefresh}>
+            <Button variant="outline" onClick={handleRefresh} className="flex items-center gap-2">
+              <RefreshCw className="w-4 h-4" />
               Actualizar
             </Button>
           </div>
