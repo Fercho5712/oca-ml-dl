@@ -4,45 +4,84 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { analyzeData, generatePredictions, calculateOptimization } from '../utils/dataAnalysis';
+import { useLocationData } from '../context/LocationDataContext';
 import { useNavigate } from 'react-router-dom';
 
-const mockLocationData = [
-  { id: 1, department: 'Cundinamarca', city: 'Bogotá', center: 'CD Bogotá', cropType: 'Café', lastUpdate: '2024-02-15' },
-  { id: 2, department: 'Antioquia', city: 'Medellín', center: 'CD Medellín', cropType: 'Plátano', lastUpdate: '2024-02-15' },
-  { id: 3, department: 'Valle del Cauca', city: 'Cali', center: 'CD Cali', cropType: 'Caña', lastUpdate: '2024-02-14' },
-  { id: 4, department: 'Atlántico', city: 'Barranquilla', center: 'CD Barranquilla', cropType: 'Yuca', lastUpdate: '2024-02-15' },
-  { id: 5, department: 'Santander', city: 'Bucaramanga', center: 'CD Bucaramanga', cropType: 'Café', lastUpdate: '2024-02-15' },
-];
-
 const Data = () => {
+  const { locationData, setLocationData, updateAnalytics } = useLocationData();
   const [filterText, setFilterText] = useState("");
-  const [data, setData] = useState(mockLocationData);
+  const [filteredData, setFilteredData] = useState(locationData);
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const handleFilter = (text: string) => {
-    setFilterText(text);
-    const filtered = mockLocationData.filter(item => 
+  useEffect(() => {
+    const filtered = locationData.filter(item => 
       Object.values(item).some(value => 
-        value.toString().toLowerCase().includes(text.toLowerCase())
+        value.toString().toLowerCase().includes(filterText.toLowerCase())
       )
     );
-    setData(filtered);
+    setFilteredData(filtered);
+  }, [filterText, locationData]);
+
+  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const text = e.target?.result as string;
+        const lines = text.split('\n');
+        const headers = lines[0].split(',');
+        
+        const newData = lines.slice(1).map((line, index) => {
+          const values = line.split(',');
+          return {
+            department: values[1] || '',
+            city: values[2] || '',
+            distribution_center: values[3] || '',
+            crop_type: values[4] || '',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          };
+        });
+
+        setLocationData([...locationData, ...newData]);
+        updateAnalytics();
+
+        toast({
+          title: "Importación exitosa",
+          description: "Los datos han sido importados y analizados correctamente",
+        });
+
+        navigate('/analysis');
+      } catch (error) {
+        toast({
+          title: "Error en la importación",
+          description: "El archivo no tiene el formato correcto",
+          variant: "destructive",
+        });
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const handleFilter = (text: string) => {
+    setFilterText(text);
   };
 
   const handleExport = () => {
     const csvContent = [
       ['ID', 'Departamento', 'Ciudad', 'Centro de Distribución', 'Tipo de Cultivo', 'Última Actualización'],
-      ...data.map(row => [
-        row.id,
+      ...filteredData.map((row, index) => [
+        index + 1,
         row.department,
         row.city,
-        row.center,
-        row.cropType,
-        row.lastUpdate
+        row.distribution_center,
+        row.crop_type,
+        row.created_at
       ])
     ].map(row => row.join(',')).join('\n');
 
@@ -62,66 +101,12 @@ const Data = () => {
   };
 
   const handleRefresh = () => {
-    setData(mockLocationData);
     setFilterText("");
+    setFilteredData(locationData);
     toast({
       title: "Datos actualizados",
       description: "La tabla ha sido actualizada con éxito",
     });
-  };
-
-  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const text = e.target?.result as string;
-        const lines = text.split('\n');
-        const headers = lines[0].split(',');
-        
-        const newData = lines.slice(1).map((line, index) => {
-          const values = line.split(',');
-          return {
-            id: index + 1,
-            department: values[1] || '',
-            city: values[2] || '',
-            center: values[3] || '',
-            cropType: values[4] || '',
-            lastUpdate: values[5] || new Date().toISOString().split('T')[0]
-          };
-        });
-
-        // Realizar análisis y cálculos
-        const analysisResult = analyzeData(newData);
-        const predictions = generatePredictions(newData);
-        const optimizations = calculateOptimization(newData);
-
-        // Guardar datos y mostrar resultados
-        setData(newData);
-        
-        // Actualizar estado global o contexto si es necesario
-        localStorage.setItem('analysisResult', JSON.stringify(analysisResult));
-        localStorage.setItem('predictions', JSON.stringify(predictions));
-        localStorage.setItem('optimizations', JSON.stringify(optimizations));
-
-        toast({
-          title: "Importación y análisis exitosos",
-          description: "Los datos han sido importados y analizados correctamente",
-        });
-
-        // Redirigir a la página de análisis
-        navigate('/analysis');
-      } catch (error) {
-        toast({
-          title: "Error en la importación",
-          description: "El archivo no tiene el formato correcto",
-          variant: "destructive",
-        });
-      }
-    };
-    reader.readAsText(file);
   };
 
   return (
@@ -197,8 +182,8 @@ const Data = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.map((row) => (
-              <TableRow key={row.id}>
+            {filteredData.map((row, index) => (
+              <TableRow key={index}>
                 <TableCell className="font-medium">
                   <div className="flex items-center">
                     <Database className="w-4 h-4 mr-2 text-primary" />
@@ -206,9 +191,9 @@ const Data = () => {
                   </div>
                 </TableCell>
                 <TableCell>{row.city}</TableCell>
-                <TableCell>{row.center}</TableCell>
-                <TableCell>{row.cropType}</TableCell>
-                <TableCell>{row.lastUpdate}</TableCell>
+                <TableCell>{row.distribution_center}</TableCell>
+                <TableCell>{row.crop_type}</TableCell>
+                <TableCell>{row.created_at}</TableCell>
               </TableRow>
             ))}
           </TableBody>

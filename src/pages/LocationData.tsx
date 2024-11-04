@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
+import { useLocationData } from '../context/LocationDataContext';
 
 const distributionCentersByDepartment = {
   "Amazonas": [{ id: "let", name: "Leticia", location: "Amazonas" }],
@@ -24,7 +25,6 @@ const distributionCentersByDepartment = {
     { id: "cal", name: "Cali", location: "Valle del Cauca" },
     { id: "bue", name: "Buenaventura", location: "Valle del Cauca" }
   ],
-  // ... otros departamentos con sus centros
 };
 
 const departments = [
@@ -47,6 +47,7 @@ const cropTypes = [
 ];
 
 const LocationData = () => {
+  const { locationData, setLocationData, updateAnalytics } = useLocationData();
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [department, setDepartment] = useState("");
@@ -63,6 +64,18 @@ const LocationData = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const newLocation = {
+      department,
+      city,
+      distribution_center: center,
+      crop_type: cropType,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    setLocationData([...locationData, newLocation]);
+    updateAnalytics();
+    
     toast({
       title: "Datos guardados",
       description: "La información ha sido registrada exitosamente",

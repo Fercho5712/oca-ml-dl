@@ -2,30 +2,18 @@ import { TrendingUp, ArrowUpRight, Activity } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar } from 'recharts';
 import { useEffect, useState } from 'react';
-
-const defaultLocationData = [
-  { department: 'Cundinamarca', locations: 45, cropTypes: 4 },
-  { department: 'Antioquia', locations: 38, cropTypes: 3 },
-  { department: 'Valle del Cauca', locations: 32, cropTypes: 5 },
-  { department: 'Atlántico', locations: 25, cropTypes: 3 },
-  { department: 'Santander', locations: 28, cropTypes: 4 },
-];
+import { useLocationData } from '../context/LocationDataContext';
 
 const Analysis = () => {
+  const { locationData } = useLocationData();
   const [analysisResult, setAnalysisResult] = useState<any>(null);
-  const [locationData, setLocationData] = useState(defaultLocationData);
 
   useEffect(() => {
     const storedAnalysis = localStorage.getItem('analysisResult');
     if (storedAnalysis) {
       setAnalysisResult(JSON.parse(storedAnalysis));
     }
-
-    const storedLocationData = localStorage.getItem('locationData');
-    if (storedLocationData) {
-      setLocationData(JSON.parse(storedLocationData));
-    }
-  }, []);
+  }, [locationData]);
 
   const kpis = analysisResult ? [
     {
