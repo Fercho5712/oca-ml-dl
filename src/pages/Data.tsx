@@ -1,36 +1,23 @@
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { useLocationData } from '../context/LocationDataContext';
-import { useNavigate } from 'react-router-dom';
 import { Database, RefreshCw } from 'lucide-react';
+import { filterLocationData, parseCSVData, generateCSVContent } from '../utils/dataHandlers';
+import type { LocationData } from '../types/locationTypes';
 
 const Data = () => {
   const { locationData, setLocationData, updateAnalytics } = useLocationData();
   const [filterText, setFilterText] = useState("");
-  const [filteredData, setFilteredData] = useState(locationData);
+  const [filteredData, setFilteredData] = useState<LocationData[]>(locationData);
   const { toast } = useToast();
-  const navigate = useNavigate();
-
-  // Update filtered data when locationData changes
-  useEffect(() => {
-    handleFilter(filterText);
-  }, [locationData]);
 
   useEffect(() => {
-    const filtered = locationData.filter(item => {
-      if (!item) return false;
-      return Object.entries(item).some(([key, value]) => {
-        if (value === null || value === undefined) return false;
-        const stringValue = String(value).toLowerCase();
-        const searchTerm = filterText.toLowerCase();
-        return stringValue.includes(searchTerm);
-      });
-    });
+    const filtered = filterLocationData(locationData, filterText);
     setFilteredData(filtered);
   }, [filterText, locationData]);
 
@@ -46,23 +33,7 @@ const Data = () => {
           throw new Error('Invalid file content');
         }
 
-        const lines = text.split('\n');
-        if (lines.length < 2) {
-          throw new Error('File is empty or invalid');
-        }
-
-        const newData = lines.slice(1).map((line) => {
-          const values = line.split(',');
-          return {
-            department: values[1] || '',
-            city: values[2] || '',
-            distribution_center: values[3] || '',
-            crop_type: values[4] || '',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          };
-        }).filter(item => item.department && item.city); // Filter out invalid entries
-
+        const newData = parseCSVData(text);
         const updatedData = [...locationData, ...newData];
         setLocationData(updatedData);
         updateAnalytics();
@@ -71,9 +42,6 @@ const Data = () => {
           title: "Importación exitosa",
           description: `Se importaron ${newData.length} registros correctamente`,
         });
-
-        // Refresh the filtered data
-        handleFilter(filterText);
       } catch (error) {
         toast({
           title: "Error en la importación",
@@ -85,23 +53,8 @@ const Data = () => {
     reader.readAsText(file);
   };
 
-  const handleFilter = (text: string) => {
-    setFilterText(text);
-  };
-
   const handleExport = () => {
-    const csvContent = [
-      ['ID', 'Departamento', 'Ciudad', 'Centro de Distribución', 'Tipo de Cultivo', 'Última Actualización'],
-      ...filteredData.map((row, index) => [
-        index + 1,
-        row.department || '',
-        row.city || '',
-        row.distribution_center || '',
-        row.crop_type || '',
-        row.created_at || ''
-      ])
-    ].map(row => row.join(',')).join('\n');
-
+    const csvContent = generateCSVContent(filteredData);
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
