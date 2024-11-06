@@ -19,7 +19,7 @@ const Login = () => {
         title: "Inicio de sesión exitoso",
         description: "Bienvenido al sistema",
       });
-      navigate("/");
+      navigate("/dashboard");
     } else {
       toast({
         variant: "destructive",
