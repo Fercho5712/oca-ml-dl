@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { useLocationData } from '../../context/LocationDataContext';
-import { departments, cropTypes } from './locationConstants';
+import { departments, cropTypes, distributionCentersByDepartment } from './locationConstants';
 
 export const LocationForm = () => {
   const { locationData, setLocationData, updateAnalytics } = useLocationData();
@@ -14,7 +14,17 @@ export const LocationForm = () => {
   const [cropType, setCropType] = useState("");
   const [center, setCenter] = useState("");
   const [humidity, setHumidity] = useState("");
+  const [availableCenters, setAvailableCenters] = useState<Array<{id: string, name: string}>>([]);
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (department && distributionCentersByDepartment[department]) {
+      setAvailableCenters(distributionCentersByDepartment[department]);
+      setCenter(""); // Reset center when department changes
+    } else {
+      setAvailableCenters([]);
+    }
+  }, [department]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,6 +110,24 @@ export const LocationForm = () => {
             </SelectContent>
           </Select>
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <label htmlFor="center" className="text-sm font-medium">
+          Centro de Distribución
+        </label>
+        <Select value={center} onValueChange={setCenter}>
+          <SelectTrigger>
+            <SelectValue placeholder="Selecciona un centro de distribución" />
+          </SelectTrigger>
+          <SelectContent>
+            {availableCenters.map((center) => (
+              <SelectItem key={center.id} value={center.id}>
+                {center.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="space-y-2">
