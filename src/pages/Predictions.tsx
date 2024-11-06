@@ -2,33 +2,33 @@ import { LineChart, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react'
 import { Card } from "@/components/ui/card";
 import { ResponsiveContainer, LineChart as ReChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 
-const mockLocationPredictions = [
-  { month: 'Ene', actual: 150, predicted: 145 },
-  { month: 'Feb', actual: 165, predicted: 160 },
-  { month: 'Mar', actual: 180, predicted: 175 },
-  { month: 'Abr', actual: 168, predicted: 170 },
-  { month: 'May', actual: 185, predicted: 180 },
+const mockExportData = [
+  { month: 'Ene', cafe: 250, banano: 180, aguacate: 120 },
+  { month: 'Feb', cafe: 280, banano: 190, aguacate: 140 },
+  { month: 'Mar', cafe: 300, banano: 200, aguacate: 160 },
+  { month: 'Abr', cafe: 320, banano: 210, aguacate: 180 },
+  { month: 'May', cafe: 340, banano: 220, aguacate: 200 },
 ];
 
 const metrics = [
   {
-    title: "Precisión de Predicción",
-    value: "96.8%",
-    trend: "↑ 1.2%",
+    title: "Total Exportaciones",
+    value: "2,450 Ton",
+    trend: "↑ 15%",
     status: "success",
     icon: <CheckCircle className="w-6 h-6" />
   },
   {
-    title: "Crecimiento Esperado",
-    value: "+15%",
-    trend: "↑ 2.3%",
+    title: "Producto Principal",
+    value: "Café",
+    trend: "340 Ton",
     status: "success",
     icon: <TrendingUp className="w-6 h-6" />
   },
   {
-    title: "Alertas de Capacidad",
+    title: "Alertas de Stock",
     value: "2",
-    trend: "+1 vs ayer",
+    trend: "+1 vs mes anterior",
     status: "warning",
     icon: <AlertTriangle className="w-6 h-6" />
   }
@@ -38,7 +38,7 @@ const Predictions = () => {
   return (
     <div className="p-8 ml-64">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Predicciones de Ubicaciones</h1>
+        <h1 className="text-3xl font-bold">Predicciones de Exportaciones</h1>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -66,10 +66,10 @@ const Predictions = () => {
 
       <div className="grid grid-cols-1 gap-6">
         <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Crecimiento de Ubicaciones</h2>
+          <h2 className="text-xl font-semibold mb-4">Tendencia de Exportaciones por Producto</h2>
           <div className="h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
-              <ReChart data={mockLocationPredictions}>
+              <ReChart data={mockExportData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />
@@ -77,18 +77,24 @@ const Predictions = () => {
                 <Legend />
                 <Line 
                   type="monotone" 
-                  dataKey="actual" 
-                  stroke="hsl(var(--primary))" 
-                  name="Ubicaciones Actuales"
+                  dataKey="cafe" 
+                  name="Café"
+                  stroke="#795548" 
                   strokeWidth={2}
                 />
                 <Line 
                   type="monotone" 
-                  dataKey="predicted" 
-                  stroke="hsl(var(--secondary))" 
-                  name="Predicción"
+                  dataKey="banano" 
+                  name="Banano"
+                  stroke="#FFB74D" 
                   strokeWidth={2}
-                  strokeDasharray="5 5"
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="aguacate" 
+                  name="Aguacate"
+                  stroke="#66BB6A" 
+                  strokeWidth={2}
                 />
               </ReChart>
             </ResponsiveContainer>
