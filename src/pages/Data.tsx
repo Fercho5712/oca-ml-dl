@@ -21,6 +21,10 @@ const Data = () => {
     setFilteredData(filtered);
   }, [filterText, locationData]);
 
+  const handleFilter = (value: string) => {
+    setFilterText(value);
+  };
+
   const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;

@@ -4,3 +4,5 @@ django-cors-headers==4.3.1
 agml==0.8.0
 python-weather==1.1.1
 python-dotenv==1.0.1
+shap==0.44.0
+scikit-learn==1.4.0
