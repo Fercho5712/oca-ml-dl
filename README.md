@@ -1,18 +1,6 @@
-# Welcome to your GPT Engineer project
-
-## Project info
-
-**URL**: https://run.gptengineer.app/projects/94a17274-8078-407e-823f-496eef2ac509/improve
-
 ## How can I edit this code?
 
 There are several ways of editing your application.
-
-**Use GPT Engineer**
-
-Simply visit the GPT Engineer project at [GPT Engineer](https://gptengineer.app/projects/94a17274-8078-407e-823f-496eef2ac509/improve) and start prompting.
-
-Changes made via gptengineer.app will be committed automatically to this repo.
 
 **Use your preferred IDE**
 
@@ -60,12 +48,3 @@ This project is built with .
 - shadcn-ui
 - Tailwind CSS
 
-## How can I deploy this project?
-
-All GPT Engineer projects can be deployed directly via the GPT Engineer app.
-
-Simply visit your project at [GPT Engineer](https://gptengineer.app/projects/94a17274-8078-407e-823f-496eef2ac509/improve) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.gptengineer.app/tips-tricks/custom-domain/)
