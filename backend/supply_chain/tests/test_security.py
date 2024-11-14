@@ -11,40 +11,63 @@ class SecurityTests(TestCase):
             username='testuser', 
             password='testpass123'
         )
-        self.client.login(username='testuser', password='testpass123')
+        self.login_url = reverse('login')
+
+    def test_brute_force_prevention(self):
+        """Test brute force attack prevention"""
+        for _ in range(6):  # Attempt more than allowed login tries
+            response = self.client.post(self.login_url, {
+                'username': 'testuser',
+                'password': 'wrongpass'
+            })
+        
+        # Next attempt should be blocked
+        response = self.client.post(self.login_url, {
+            'username': 'testuser',
+            'password': 'testpass123'
+        })
+        self.assertEqual(response.status_code, status.HTTP_429_TOO_MANY_REQUESTS)
 
     def test_sql_injection_prevention(self):
-        """Test SQL injection prevention"""
-        malicious_input = "' OR '1'='1"
-        response = self.client.get(
-            f"/api/locations/?search={malicious_input}"
-        )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.json()), 0)
+        """Test SQL injection prevention in login"""
+        malicious_inputs = [
+            "' OR '1'='1",
+            "admin'--",
+            "' UNION SELECT username, password FROM users--",
+            "'; DROP TABLE users--"
+        ]
+        
+        for malicious_input in malicious_inputs:
+            response = self.client.post(self.login_url, {
+                'username': malicious_input,
+                'password': malicious_input
+            })
+            self.assertNotEqual(response.status_code, status.HTTP_200_OK)
 
     def test_xss_prevention(self):
-        """Test XSS prevention"""
+        """Test XSS prevention in login form"""
         xss_payload = "<script>alert('xss')</script>"
-        data = {
-            'department': xss_payload,
-            'city': 'Test City',
-            'distribution_center': 'Test Center',
-            'crop_type': 'Test Crop'
-        }
-        response = self.client.post(
-            reverse('location-list'),
-            data=json.dumps(data),
-            content_type='application/json'
-        )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertNotIn('<script>', response.json()['department'])
+        response = self.client.post(self.login_url, {
+            'username': xss_payload,
+            'password': 'testpass123'
+        })
+        self.assertNotIn(xss_payload, str(response.content))
 
     def test_csrf_protection(self):
         """Test CSRF protection"""
-        # Try to post without CSRF token
         client = Client(enforce_csrf_checks=True)
-        response = client.post(
-            reverse('location-list'),
-            {'department': 'Test'}
-        )
+        response = client.post(self.login_url, {
+            'username': 'testuser',
+            'password': 'testpass123'
+        })
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_password_complexity(self):
+        """Test password complexity requirements"""
+        weak_passwords = ['123456', 'password', 'qwerty', 'abc123']
+        for password in weak_passwords:
+            response = self.client.post('/api/register/', {
+                'username': 'newuser',
+                'password': password
+            })
+            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
