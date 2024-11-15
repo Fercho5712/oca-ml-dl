@@ -1,25 +1,35 @@
 import { Settings, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
-import { useEffect, useState } from 'react';
 import { useLocationData } from '../context/LocationDataContext';
 import { useQuery } from '@tanstack/react-query';
+import { useToast } from "@/components/ui/use-toast";
 
 const Optimization = () => {
   const { locationData } = useLocationData();
+  const { toast } = useToast();
 
-  const { data: optimizationResults, isLoading } = useQuery({
-    queryKey: ['optimization'],
+  const { data: optimizationResults, isLoading, refetch } = useQuery({
+    queryKey: ['optimization', locationData.length],
     queryFn: async () => {
-      const response = await fetch('http://localhost:8000/api/locations/multi-agent-optimization/', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+      try {
+        const response = await fetch('http://localhost:8000/api/locations/multi-agent-optimization/', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        if (!response.ok) {
+          throw new Error('Error al cargar los datos de optimización');
         }
-      });
-      if (!response.ok) {
-        throw new Error('Error al cargar los datos de optimización');
+        return response.json();
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar los datos de optimización",
+          variant: "destructive",
+        });
+        throw error;
       }
-      return response.json();
     }
   });
 
@@ -69,6 +79,10 @@ const Optimization = () => {
     <div className="p-8 ml-64">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Optimización de Rutas y Centros</h1>
+        <Button variant="outline" onClick={() => refetch()} className="flex items-center gap-2">
+          <RefreshCw className="w-4 h-4" />
+          Actualizar
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
