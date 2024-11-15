@@ -1,5 +1,6 @@
-import { Settings, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Settings, TrendingUp, AlertTriangle, CheckCircle, RefreshCw } from 'lucide-react';
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { useLocationData } from '../context/LocationDataContext';
 import { useQuery } from '@tanstack/react-query';
@@ -13,7 +14,8 @@ const Optimization = () => {
     queryKey: ['optimization', locationData.length],
     queryFn: async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/locations/multi-agent-optimization/', {
+        // Using relative URL to match the current domain
+        const response = await fetch('/api/locations/multi-agent-optimization/', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
