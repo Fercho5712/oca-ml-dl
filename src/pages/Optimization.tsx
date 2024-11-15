@@ -3,44 +3,67 @@ import { Card } from "@/components/ui/card";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { useEffect, useState } from 'react';
 import { useLocationData } from '../context/LocationDataContext';
+import { useQuery } from '@tanstack/react-query';
 
 const Optimization = () => {
   const { locationData } = useLocationData();
-  const [optimizationData, setOptimizationData] = useState([]);
 
-  useEffect(() => {
-    // Calculate optimization data based on locationData
-    const data = locationData.map(location => ({
-      resource: `${location.distribution_center} - ${location.city}`,
-      actual: Math.floor(Math.random() * (90 - 65) + 65),
-      optimal: Math.floor(Math.random() * (100 - 85) + 85)
-    }));
-    setOptimizationData(data);
-  }, [locationData]);
+  const { data: optimizationResults, isLoading } = useQuery({
+    queryKey: ['optimization'],
+    queryFn: async () => {
+      const response = await fetch('http://localhost:8000/api/locations/multi-agent-optimization/', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Error al cargar los datos de optimización');
+      }
+      return response.json();
+    }
+  });
 
   const metrics = [
     {
-      title: "Eficiencia Global",
-      value: "78%",
+      title: "Eficiencia de Recursos",
+      value: optimizationResults?.resource_allocation?.efficiency.toFixed(2) + '%' || '0%',
       trend: "↑ 2.5%",
       status: "success",
       icon: <CheckCircle className="w-6 h-6" />
     },
     {
-      title: "Ahorro Potencial",
-      value: "12.3%",
+      title: "Ahorro en Tiempo",
+      value: optimizationResults?.route_optimization?.time_saved || '0%',
       trend: "↑ 0.8%",
       status: "success",
       icon: <TrendingUp className="w-6 h-6" />
     },
     {
-      title: "Puntos Críticos",
-      value: "3",
+      title: "Reducción de Costos",
+      value: optimizationResults?.route_optimization?.cost_reduction || '0%',
       trend: "-1 vs ayer",
       status: "warning",
       icon: <AlertTriangle className="w-6 h-6" />
     }
   ];
+
+  const distributionData = optimizationResults?.resource_allocation?.distribution
+    ? Object.entries(optimizationResults.resource_allocation.distribution).map(([center, value]) => ({
+        center,
+        actual: (value as number) * 100,
+        optimal: Math.min((value as number) * 110, 100)
+      }))
+    : [];
+
+  if (isLoading) {
+    return (
+      <div className="p-8 ml-64">
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8 ml-64">
@@ -73,24 +96,24 @@ const Optimization = () => {
 
       <div className="grid grid-cols-1 gap-6">
         <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Rendimiento de Rutas y Centros</h2>
+          <h2 className="text-xl font-semibold mb-4">Distribución de Recursos por Centro</h2>
           <div className="h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={optimizationData}>
+              <BarChart data={distributionData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="resource" angle={-45} textAnchor="end" height={100} />
+                <XAxis dataKey="center" />
                 <YAxis />
                 <Tooltip />
                 <Legend />
                 <Bar 
                   dataKey="actual" 
                   fill="hsl(var(--primary))" 
-                  name="Rendimiento Actual"
+                  name="Distribución Actual (%)"
                 />
                 <Bar 
                   dataKey="optimal" 
                   fill="hsl(var(--secondary))" 
-                  name="Nivel Óptimo"
+                  name="Nivel Óptimo (%)"
                 />
               </BarChart>
             </ResponsiveContainer>
