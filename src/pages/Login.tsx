@@ -4,19 +4,27 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { UserRole } from "@/types/authTypes";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState<UserRole>("farmer");
   const [attempts, setAttempts] = useState(0);
   const [isBlocked, setIsBlocked] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const MAX_ATTEMPTS = 5;
-  const BLOCK_DURATION = 15 * 60 * 1000; // 15 minutes
+  const BLOCK_DURATION = 15 * 60 * 1000;
 
   const validateInput = (input: string) => {
-    // Prevent SQL injection and XSS
     const dangerousPatterns = [
       "'",
       '"',
@@ -56,17 +64,16 @@ const Login = () => {
     }
 
     try {
-      // Simulated login - replace with actual API call
+      // Simulated login with role validation
       if (email === "demo@example.com" && password === "demo123") {
-        // Clear sensitive data
         setPassword("");
         localStorage.setItem("isAuthenticated", "true");
-        // Store only non-sensitive session data
+        localStorage.setItem("userRole", role);
         sessionStorage.setItem("lastLogin", new Date().toISOString());
         
         toast({
           title: "Inicio de sesión exitoso",
-          description: "Bienvenido al sistema",
+          description: `Bienvenido al sistema como ${getRoleLabel(role)}`,
         });
         navigate("/dashboard");
       } else {
@@ -100,6 +107,16 @@ const Login = () => {
         description: "Error al procesar la solicitud",
       });
     }
+  };
+
+  const getRoleLabel = (role: UserRole): string => {
+    const roles = {
+      admin: "Administrador",
+      farmer: "Agricultor",
+      distributor: "Distribuidor",
+      retailer: "Minorista"
+    };
+    return roles[role];
   };
 
   return (
@@ -142,6 +159,23 @@ const Login = () => {
               disabled={isBlocked}
               autoComplete="current-password"
             />
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="role" className="text-sm font-medium">
+              Rol
+            </label>
+            <Select value={role} onValueChange={(value: UserRole) => setRole(value)}>
+              <SelectTrigger id="role" className="w-full">
+                <SelectValue placeholder="Selecciona tu rol" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="admin">Administrador</SelectItem>
+                <SelectItem value="farmer">Agricultor</SelectItem>
+                <SelectItem value="distributor">Distribuidor</SelectItem>
+                <SelectItem value="retailer">Minorista</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <Button type="submit" className="w-full" disabled={isBlocked}>
