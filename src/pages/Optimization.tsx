@@ -5,6 +5,17 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Toolti
 import { useLocationData } from '../context/LocationDataContext';
 import { useQuery } from '@tanstack/react-query';
 import { useToast } from "@/components/ui/use-toast";
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Fix for default marker icon in react-leaflet
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
 const Optimization = () => {
   const { locationData } = useLocationData();
@@ -14,7 +25,6 @@ const Optimization = () => {
     queryKey: ['optimization', locationData.length],
     queryFn: async () => {
       try {
-        // Using relative URL to match the current domain
         const response = await fetch('/api/locations/multi-agent-optimization/', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -77,6 +87,9 @@ const Optimization = () => {
     );
   }
 
+  // Coordenadas del centro de Colombia
+  const defaultCenter = [4.5709, -74.2973];
+
   return (
     <div className="p-8 ml-64">
       <div className="flex justify-between items-center mb-8">
@@ -110,7 +123,7 @@ const Optimization = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">Distribución de Recursos por Centro</h2>
           <div className="h-[400px]">
@@ -133,6 +146,36 @@ const Optimization = () => {
                 />
               </BarChart>
             </ResponsiveContainer>
+          </div>
+        </Card>
+
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Mapa de Distribución</h2>
+          <div className="h-[400px] w-full rounded-lg overflow-hidden">
+            <MapContainer 
+              center={defaultCenter as [number, number]} 
+              zoom={5} 
+              style={{ height: '100%', width: '100%' }}
+            >
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              />
+              {locationData.map((location, index) => (
+                <Marker 
+                  key={index} 
+                  position={[4.5709, -74.2973]} // Aquí deberías usar las coordenadas reales de cada ubicación
+                >
+                  <Popup>
+                    <div>
+                      <h3 className="font-semibold">{location.distribution_center}</h3>
+                      <p>{location.city}, {location.department}</p>
+                      <p>Tipo de cultivo: {location.crop_type}</p>
+                    </div>
+                  </Popup>
+                </Marker>
+              ))}
+            </MapContainer>
           </div>
         </Card>
       </div>
