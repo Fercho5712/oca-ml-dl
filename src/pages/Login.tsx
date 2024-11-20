@@ -24,6 +24,13 @@ const Login = () => {
   const MAX_ATTEMPTS = 5;
   const BLOCK_DURATION = 15 * 60 * 1000;
 
+  const VALID_CREDENTIALS = {
+    admin: { email: "admin@example.com", password: "admin123" },
+    farmer: { email: "farmer@example.com", password: "farmer123" },
+    distributor: { email: "distributor@example.com", password: "distributor123" },
+    retailer: { email: "retailer@example.com", password: "retailer123" },
+  };
+
   const validateInput = (input: string) => {
     const dangerousPatterns = [
       "'",
@@ -64,8 +71,8 @@ const Login = () => {
     }
 
     try {
-      // Simulated login with role validation
-      if (email === "demo@example.com" && password === "demo123") {
+      const validCredentials = VALID_CREDENTIALS[role];
+      if (email === validCredentials.email && password === validCredentials.password) {
         setPassword("");
         localStorage.setItem("isAuthenticated", "true");
         localStorage.setItem("userRole", role);
@@ -181,6 +188,16 @@ const Login = () => {
           <Button type="submit" className="w-full" disabled={isBlocked}>
             Iniciar sesión
           </Button>
+
+          <div className="mt-4 text-sm text-gray-500">
+            <p>Credenciales de prueba:</p>
+            <ul className="list-disc pl-5 mt-2">
+              <li>Admin: admin@example.com / admin123</li>
+              <li>Agricultor: farmer@example.com / farmer123</li>
+              <li>Distribuidor: distributor@example.com / distributor123</li>
+              <li>Minorista: retailer@example.com / retailer123</li>
+            </ul>
+          </div>
         </form>
       </Card>
     </div>
