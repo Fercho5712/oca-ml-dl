@@ -8,6 +8,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import { Suspense, lazy } from 'react';
 
 // Fix for default marker icon in react-leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -17,32 +18,29 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
+// Coordenadas del centro de Colombia
+const defaultCenter = [4.5709, -74.2973];
+
 const Optimization = () => {
   const { locationData } = useLocationData();
   const { toast } = useToast();
 
   const { data: optimizationResults, isLoading, refetch } = useQuery({
-    queryKey: ['optimization', locationData.length],
+    queryKey: ['optimization'],
     queryFn: async () => {
-      try {
-        const response = await fetch('/api/locations/multi-agent-optimization/', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-        if (!response.ok) {
-          throw new Error('Error al cargar los datos de optimización');
+      const response = await fetch('/api/locations/multi-agent-optimization/', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
-        return response.json();
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "No se pudieron cargar los datos de optimización",
-          variant: "destructive",
-        });
-        throw error;
+      });
+      if (!response.ok) {
+        throw new Error('Error al cargar los datos de optimización');
       }
-    }
+      return response.json();
+    },
+    staleTime: 30000, // Los datos se consideran frescos por 30 segundos
+    cacheTime: 5 * 60 * 1000, // Cache por 5 minutos
+    refetchOnWindowFocus: false // No recargar al cambiar de ventana
   });
 
   const metrics = [
@@ -87,9 +85,6 @@ const Optimization = () => {
     );
   }
 
-  // Coordenadas del centro de Colombia
-  const defaultCenter = [4.5709, -74.2973];
-
   return (
     <div className="p-8 ml-64">
       <div className="flex justify-between items-center mb-8">
@@ -124,60 +119,63 @@ const Optimization = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Distribución de Recursos por Centro</h2>
-          <div className="h-[400px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={distributionData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="center" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar 
-                  dataKey="actual" 
-                  fill="hsl(var(--primary))" 
-                  name="Distribución Actual (%)"
-                />
-                <Bar 
-                  dataKey="optimal" 
-                  fill="hsl(var(--secondary))" 
-                  name="Nivel Óptimo (%)"
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
+        <Suspense fallback={<div>Cargando gráfico...</div>}>
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold mb-4">Distribución de Recursos por Centro</h2>
+            <div className="h-[400px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={distributionData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="center" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar 
+                    dataKey="actual" 
+                    fill="hsl(var(--primary))" 
+                    name="Distribución Actual (%)"
+                  />
+                  <Bar 
+                    dataKey="optimal" 
+                    fill="hsl(var(--secondary))" 
+                    name="Nivel Óptimo (%)"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+        </Suspense>
 
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Mapa de Distribución</h2>
-          <div className="h-[400px] w-full rounded-lg overflow-hidden">
-            <MapContainer 
-              center={defaultCenter as [number, number]} 
-              zoom={5} 
-              style={{ height: '100%', width: '100%' }}
-            >
-              <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              />
-              {locationData.map((location, index) => (
-                <Marker 
-                  key={index} 
-                  position={[4.5709, -74.2973]} // Aquí deberías usar las coordenadas reales de cada ubicación
-                >
-                  <Popup>
-                    <div>
-                      <h3 className="font-semibold">{location.distribution_center}</h3>
-                      <p>{location.city}, {location.department}</p>
-                      <p>Tipo de cultivo: {location.crop_type}</p>
-                    </div>
-                  </Popup>
-                </Marker>
-              ))}
-            </MapContainer>
-          </div>
-        </Card>
+        <Suspense fallback={<div>Cargando mapa...</div>}>
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold mb-4">Mapa de Distribución</h2>
+            <div className="h-[400px] w-full rounded-lg overflow-hidden">
+              <MapContainer 
+                defaultCenter={defaultCenter}
+                zoom={5} 
+                style={{ height: '100%', width: '100%' }}
+              >
+                <TileLayer
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                {locationData.map((location, index) => (
+                  <Marker 
+                    key={index} 
+                    position={defaultCenter}
+                  >
+                    <Popup>
+                      <div>
+                        <h3 className="font-semibold">{location.distribution_center}</h3>
+                        <p>{location.city}, {location.department}</p>
+                        <p>Tipo de cultivo: {location.crop_type}</p>
+                      </div>
+                    </Popup>
+                  </Marker>
+                ))}
+              </MapContainer>
+            </div>
+          </Card>
+        </Suspense>
       </div>
     </div>
   );
