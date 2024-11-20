@@ -27,6 +27,7 @@ export const parseCSVData = (text: string): LocationData[] => {
         city: values[2] || '',
         distribution_center: values[3] || '',
         crop_type: values[4] || '',
+        humidity: 50, // Default humidity value
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
@@ -35,13 +36,14 @@ export const parseCSVData = (text: string): LocationData[] => {
 };
 
 export const generateCSVContent = (data: LocationData[]) => {
-  const headers = ['ID', 'Departamento', 'Ciudad', 'Centro de Distribución', 'Tipo de Cultivo', 'Última Actualización'];
+  const headers = ['ID', 'Departamento', 'Ciudad', 'Centro de Distribución', 'Tipo de Cultivo', 'Humedad', 'Última Actualización'];
   const rows = data.map((row, index) => [
     index + 1,
     row.department || '',
     row.city || '',
     row.distribution_center || '',
     row.crop_type || '',
+    row.humidity || 50,
     row.created_at || ''
   ]);
   

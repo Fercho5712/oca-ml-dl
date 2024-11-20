@@ -31,7 +31,12 @@ const ZOOM_LEVEL = 5;
 const Optimization = () => {
   const { locationData } = useLocationData();
   const { toast } = useToast();
-  const [mapKey, setMapKey] = useState(0); // Add key for map reinitialization
+  const [mapKey, setMapKey] = useState(0);
+
+  // Reset map when location data changes
+  useEffect(() => {
+    setMapKey(prev => prev + 1);
+  }, [locationData]);
 
   const { data: optimizationResults, isLoading, refetch } = useQuery({
     queryKey: ['optimization'],
@@ -50,11 +55,6 @@ const Optimization = () => {
     gcTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false
   });
-
-  // Reset map when location data changes
-  useEffect(() => {
-    setMapKey(prev => prev + 1);
-  }, [locationData]);
 
   const metrics = useMemo(() => [
     {
@@ -174,8 +174,8 @@ const Optimization = () => {
             <div className="h-[400px] w-full rounded-lg overflow-hidden">
               <MapContainer 
                 key={mapKey}
-                defaultCenter={CENTER_COORDS}
-                defaultZoom={ZOOM_LEVEL} 
+                center={CENTER_COORDS}
+                zoom={ZOOM_LEVEL} 
                 style={{ height: '100%', width: '100%' }}
               >
                 <TileLayer
