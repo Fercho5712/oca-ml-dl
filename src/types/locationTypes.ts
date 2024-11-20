@@ -3,7 +3,7 @@ export interface LocationData {
   city: string;
   distribution_center: string;
   crop_type: string;
-  humidity?: number;
+  humidity: number; // Added as required field
   created_at?: string;
   updated_at?: string;
 }

@@ -1,13 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-
-interface LocationData {
-  department: string;
-  city: string;
-  distribution_center: string;
-  crop_type: string;
-  created_at?: string;
-  updated_at?: string;
-}
+import type { LocationData } from '../types/locationTypes';
 
 interface LocationDataContextType {
   locationData: LocationData[];
@@ -53,7 +45,13 @@ export const LocationDataProvider = ({ children }: { children: React.ReactNode }
   useEffect(() => {
     const storedData = localStorage.getItem('locationData');
     if (storedData) {
-      setLocationData(JSON.parse(storedData));
+      const parsedData = JSON.parse(storedData);
+      // Ensure humidity field exists
+      const dataWithHumidity = parsedData.map((item: Partial<LocationData>) => ({
+        ...item,
+        humidity: item.humidity ?? 50 // Default humidity value if not present
+      }));
+      setLocationData(dataWithHumidity as LocationData[]);
     }
   }, []);
 
