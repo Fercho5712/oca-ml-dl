@@ -5,10 +5,16 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Toolti
 import { useLocationData } from '../context/LocationDataContext';
 import { useQuery } from '@tanstack/react-query';
 import { useToast } from "@/components/ui/use-toast";
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { Suspense, lazy, useMemo } from 'react';
+import type { MapContainerProps } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import { Suspense, lazy } from 'react';
+
+// Lazy load the map components
+const MapContainer = lazy(() => import('react-leaflet').then(module => ({ default: module.MapContainer })));
+const TileLayer = lazy(() => import('react-leaflet').then(module => ({ default: module.TileLayer })));
+const Marker = lazy(() => import('react-leaflet').then(module => ({ default: module.Marker })));
+const Popup = lazy(() => import('react-leaflet').then(module => ({ default: module.Popup })));
 
 // Fix for default marker icon in react-leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -19,7 +25,8 @@ L.Icon.Default.mergeOptions({
 });
 
 // Coordenadas del centro de Colombia
-const defaultCenter = [4.5709, -74.2973];
+const CENTER_COORDS: [number, number] = [4.5709, -74.2973];
+const ZOOM_LEVEL = 5;
 
 const Optimization = () => {
   const { locationData } = useLocationData();
@@ -38,12 +45,12 @@ const Optimization = () => {
       }
       return response.json();
     },
-    staleTime: 30000, // Los datos se consideran frescos por 30 segundos
-    cacheTime: 5 * 60 * 1000, // Cache por 5 minutos
-    refetchOnWindowFocus: false // No recargar al cambiar de ventana
+    staleTime: 30000,
+    gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
 
-  const metrics = [
+  const metrics = useMemo(() => [
     {
       title: "Eficiencia de Recursos",
       value: optimizationResults?.resource_allocation?.efficiency.toFixed(2) + '%' || '0%',
@@ -65,15 +72,18 @@ const Optimization = () => {
       status: "warning",
       icon: <AlertTriangle className="w-6 h-6" />
     }
-  ];
+  ], [optimizationResults]);
 
-  const distributionData = optimizationResults?.resource_allocation?.distribution
-    ? Object.entries(optimizationResults.resource_allocation.distribution).map(([center, value]) => ({
-        center,
-        actual: (value as number) * 100,
-        optimal: Math.min((value as number) * 110, 100)
-      }))
-    : [];
+  const distributionData = useMemo(() => 
+    optimizationResults?.resource_allocation?.distribution
+      ? Object.entries(optimizationResults.resource_allocation.distribution).map(([center, value]) => ({
+          center,
+          actual: (value as number) * 100,
+          optimal: Math.min((value as number) * 110, 100)
+        }))
+      : [],
+    [optimizationResults]
+  );
 
   if (isLoading) {
     return (
@@ -146,13 +156,19 @@ const Optimization = () => {
           </Card>
         </Suspense>
 
-        <Suspense fallback={<div>Cargando mapa...</div>}>
+        <Suspense fallback={
+          <Card className="p-6">
+            <div className="flex justify-center items-center h-[400px]">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+          </Card>
+        }>
           <Card className="p-6">
             <h2 className="text-xl font-semibold mb-4">Mapa de Distribución</h2>
             <div className="h-[400px] w-full rounded-lg overflow-hidden">
               <MapContainer 
-                defaultCenter={defaultCenter}
-                zoom={5} 
+                center={CENTER_COORDS}
+                zoom={ZOOM_LEVEL} 
                 style={{ height: '100%', width: '100%' }}
               >
                 <TileLayer
@@ -161,7 +177,7 @@ const Optimization = () => {
                 {locationData.map((location, index) => (
                   <Marker 
                     key={index} 
-                    position={defaultCenter}
+                    position={CENTER_COORDS}
                   >
                     <Popup>
                       <div>
