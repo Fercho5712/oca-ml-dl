@@ -1,42 +1,16 @@
 import { Settings, TrendingUp, AlertTriangle, CheckCircle, RefreshCw } from 'lucide-react';
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { useLocationData } from '../context/LocationDataContext';
 import { useQuery } from '@tanstack/react-query';
 import { useToast } from "@/components/ui/use-toast";
-import { Suspense, lazy, useMemo, useState, useEffect } from 'react';
-import type { MapContainerProps } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-
-// Lazy load the map components
-const MapContainer = lazy(() => import('react-leaflet').then(module => ({ default: module.MapContainer })));
-const TileLayer = lazy(() => import('react-leaflet').then(module => ({ default: module.TileLayer })));
-const Marker = lazy(() => import('react-leaflet').then(module => ({ default: module.Marker })));
-const Popup = lazy(() => import('react-leaflet').then(module => ({ default: module.Popup })));
-
-// Fix for default marker icon in react-leaflet
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
-
-// Coordenadas del centro de Colombia
-const CENTER_COORDS: [number, number] = [4.5709, -74.2973];
-const ZOOM_LEVEL = 5;
+import { Suspense, useMemo } from 'react';
+import { MetricsCards } from '@/components/optimization/MetricsCards';
+import { ResourceDistributionChart } from '@/components/optimization/ResourceDistributionChart';
+import { DistributionMap } from '@/components/optimization/DistributionMap';
 
 const Optimization = () => {
   const { locationData } = useLocationData();
   const { toast } = useToast();
-  const [mapKey, setMapKey] = useState(0);
-
-  // Reset map when location data changes
-  useEffect(() => {
-    setMapKey(prev => prev + 1);
-  }, [locationData]);
 
   const { data: optimizationResults, isLoading, refetch } = useQuery({
     queryKey: ['optimization'],
@@ -111,93 +85,15 @@ const Optimization = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        {metrics.map((metric, index) => (
-          <Card key={index} className="p-6">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-sm text-gray-500">{metric.title}</p>
-                <h3 className="text-2xl font-semibold mt-1">{metric.value}</h3>
-                <p className={`text-sm mt-1 ${
-                  metric.status === 'success' ? 'text-green-600' : 'text-yellow-600'
-                }`}>
-                  {metric.trend}
-                </p>
-              </div>
-              <div className={`${
-                metric.status === 'success' ? 'text-green-600' : 'text-yellow-600'
-              }`}>
-                {metric.icon}
-              </div>
-            </div>
-          </Card>
-        ))}
-      </div>
+      <MetricsCards metrics={metrics} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Suspense fallback={<div>Cargando gráfico...</div>}>
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Distribución de Recursos por Centro</h2>
-            <div className="h-[400px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={distributionData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="center" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar 
-                    dataKey="actual" 
-                    fill="hsl(var(--primary))" 
-                    name="Distribución Actual (%)"
-                  />
-                  <Bar 
-                    dataKey="optimal" 
-                    fill="hsl(var(--secondary))" 
-                    name="Nivel Óptimo (%)"
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
+          <ResourceDistributionChart distributionData={distributionData} />
         </Suspense>
 
-        <Suspense fallback={
-          <Card className="p-6">
-            <div className="flex justify-center items-center h-[400px]">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-            </div>
-          </Card>
-        }>
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Mapa de Distribución</h2>
-            <div className="h-[400px] w-full rounded-lg overflow-hidden">
-              <MapContainer 
-                key={mapKey}
-                center={CENTER_COORDS}
-                zoom={ZOOM_LEVEL} 
-                style={{ height: '100%', width: '100%' }}
-              >
-                <TileLayer
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-                {locationData.map((location, index) => (
-                  <Marker 
-                    key={index} 
-                    position={CENTER_COORDS}
-                  >
-                    <Popup>
-                      <div>
-                        <h3 className="font-semibold">{location.distribution_center}</h3>
-                        <p>{location.city}, {location.department}</p>
-                        <p>Tipo de cultivo: {location.crop_type}</p>
-                      </div>
-                    </Popup>
-                  </Marker>
-                ))}
-              </MapContainer>
-            </div>
-          </Card>
+        <Suspense fallback={<div>Cargando mapa...</div>}>
+          <DistributionMap locationData={locationData} />
         </Suspense>
       </div>
     </div>
